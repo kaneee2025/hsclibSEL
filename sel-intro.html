@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEL 基礎知識 | 新生醫專圖書館</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- 沿用首頁 (Version 6) 的 CSS 風格以保持一致性 --- */
+        :root {
+            --header-height: 64px;
+            --sidebar-width: 250px;
+            --primary-color: #5D9CEC;
+            --primary-dark: #4A89DC;
+            --text-main: #333;
+            --text-light: #666;
+            --bg-body: #F0F4F8;
+            --bg-sidebar: #F9FAFC;
+            --accent-green: #37BC9B; /* 新增：輔助綠色 */
+            --accent-purple: #967ADC; /* 新增：輔助紫色 */
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 頂部通欄 */
+        header.top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+
+        .navbar-brand { text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .brand-logo { height: 45px; width: auto; }
+        .brand-text { font-size: 1.25rem; font-weight: bold; color: var(--text-main); white-space: nowrap; }
+        
+        /* 右上角連結樣式 */
+        .navbar-links { display: flex; align-items: center; }
+        .navbar-links a { 
+            text-decoration: none; 
+            color: #777; 
+            margin-left: 20px; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            transition: 0.3s; 
+            white-space: nowrap;
+        }
+        .navbar-links a:hover { color: var(--primary-color); }
+
+        /* --- 左側選單 (Sidebar) - 與 Index 同步更新 --- */
+        aside.sidebar {
+            position: fixed; top: var(--header-height); left: 0;
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+            background: var(--bg-sidebar); border-right: 1px solid #e1e8ed;
+            padding: 20px; /* 增加內距 */
+            overflow-y: auto; z-index: 900;
+        }
+
+        /* 側邊欄區塊卡片化 */
+        .sidebar-block {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 區塊標題 */
+        .block-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .block-title i { color: #00796B; }
+
+        /* 選單列表 */
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { border-bottom: 1px dashed #eee; }
+        .sidebar-menu li:last-child { border-bottom: none; }
+
+        .sidebar-menu a {
+            display: flex; align-items: center; padding: 10px 5px;
+            text-decoration: none; color: #555; font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active { 
+            color: var(--primary-color); 
+            padding-left: 8px;
+            font-weight: bold; 
+        }
+        .sidebar-menu i { width: 20px; text-align: center; margin-right: 8px; color: #888; }
+        .sidebar-menu a:hover i, .sidebar-menu a.active i { color: var(--primary-color); }
+
+        /* 最新公告列表 */
+        .news-list { list-style: none; padding: 0; margin: 0; }
+        .news-item { margin-bottom: 15px; }
+        .news-item:last-child { margin-bottom: 0; }
+        
+        .news-date { font-size: 0.8rem; color: #999; display: block; margin-bottom: 3px; }
+        .news-title { font-size: 0.95rem; color: #333; line-height: 1.4; display: block; text-decoration: none; }
+        .news-title:hover { color: var(--primary-color); }
+
+        /* --- 內頁主要內容區 (針對文章閱讀優化) --- */
+        main.main-content {
+            margin-top: var(--header-height); margin-left: var(--sidebar-width);
+            padding: 50px 8%; /* 增加左右留白，提升閱讀感 */
+            width: 100%;
+            max-width: 1200px; /* 限制最大寬度，避免文字過長 */
+        }
+
+        /* 麵包屑導覽 */
+        .breadcrumb { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
+        .breadcrumb a { text-decoration: none; color: var(--primary-color); }
+
+        /* 文章標題 */
+        .page-header {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px; margin-bottom: 40px;
+        }
+        .page-header h1 { font-size: 2.2rem; color: #2c3e50; margin: 0; }
+        .page-header p { color: #666; margin-top: 10px; font-size: 1.1rem; }
+
+        /* 內容區塊 */
+        .content-section {
+            background: #fff; padding: 40px; border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 40px;
+            line-height: 1.8; font-size: 1.05rem;
+        }
+        
+        .content-section h2 {
+            font-size: 1.6rem; color: var(--primary-dark); margin-top: 0; margin-bottom: 25px;
+            border-left: 6px solid var(--accent-green); padding-left: 15px;
+        }
+
+        .content-section h3 { font-size: 1.3rem; color: #333; margin-top: 30px; margin-bottom: 15px; font-weight: bold; }
+
+        /* 五大核心能力區塊 (特色設計) */
+        .competency-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;
+            margin-top: 20px;
+        }
+        .competency-card {
+            background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; padding: 25px;
+            transition: transform 0.2s; border-top: 4px solid var(--primary-color);
+        }
+        .competency-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .competency-title { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; color: var(--text-main); }
+        .competency-icon { color: var(--primary-color); font-size: 1.4rem; }
+
+        /* 新增：圖片與圖說樣式 */
+        .content-image-wrapper {
+            margin-top: 50px;
+            text-align: center;
+            border-top: 1px dashed #eee;
+            padding-top: 40px;
+        }
+        .content-image-wrapper img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+        }
+        .image-caption {
+            font-size: 0.9rem;
+            color: #777;
+            background-color: #f9f9f9;
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: inline-block;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        /* 數據重點強調 */
+        .stat-box {
+            background: linear-gradient(135deg, #5D9CEC 0%, #4A89DC 100%);
+            color: #fff; padding: 30px; border-radius: 12px; margin: 30px 0;
+            display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;
+        }
+        .stat-item { text-align: center; min-width: 150px; }
+        .stat-number { font-size: 2.5rem; font-weight: bold; display: block; margin-bottom: 5px; }
+        .stat-label { font-size: 1rem; opacity: 0.9; }
+
+        /* 引用來源樣式 */
+        .source-note {
+            font-size: 0.9rem; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; font-style: italic;
+        }
+
+        /* 頁腳樣式更新 */
+        footer {
+            text-align: center; 
+            color: #777; 
+            padding: 40px 20px; 
+            font-size: 0.9rem; 
+            border-top: 1px solid #eee; 
+            margin-top: 40px;
+            line-height: 1.6; /* 增加行距 */
+            width: 100%; /* 確保滿版 */
+        }
+
+        /* RWD */
+        @media (max-width: 768px) {
+            aside.sidebar { display: none; }
+            main.main-content { margin-left: 0; padding: 20px; }
+            .stat-box { flex-direction: column; }
+            .navbar-links a { display: none; } 
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <a href="index.html" class="navbar-brand">
+            <img src="hsc-logo.png" alt="新生醫專圖書館 Logo" class="brand-logo">
+            <span class="brand-text">新生醫專圖書館 SEL 專區</span>
+        </a>
+        <nav class="navbar-links">
+            <a href="index.html">回首頁</a>
+            <a href="https://lib.hsc.edu.tw/" target="_blank">回圖書館首頁</a>
+            <a href="https://www.hsc.edu.tw/" target="_blank">回學校首頁</a>
+        </nav>
+    </header>
+
+    <aside class="sidebar">
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-compass"></i> 快速導引</div>
+            <ul class="sidebar-menu">
+                <li><a href="sel-intro.html" class="active"><i class="fa-solid fa-star"></i> 認識 SEL</a></li>
+                <li><a href="sel-videos.html"><i class="fa-solid fa-play-circle"></i> 精選影音</a></li>
+                <li><a href="sel-resources.html"><i class="fa-solid fa-link"></i> 線上資源</a></li>
+                <li><a href="sel-ebooks.html"><i class="fa-solid fa-book"></i> 電子書推薦</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-bullhorn"></i> 最新公告</div>
+            <ul class="news-list">
+                <li class="news-item">
+                    <span class="news-date">2026/01/08</span>
+                    <a href="sel-videos.html" class="news-title">新增 6 部 SEL 精選影音，歡迎觀看！</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/07</span>
+                    <a href="sel-resources.html" class="news-title">新增學術研究機構與推廣協會資源連結</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/01</span>
+                    <span class="news-title">SEL 社會情緒學習專區正式上線！</span>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        
+        <div class="breadcrumb">
+            <a href="index.html">首頁</a> &gt; <span>SEL 基礎知識</span>
+        </div>
+
+        <header class="page-header">
+            <h1>社會情緒學習 (SEL) 基礎知識</h1>
+            <p>Social Emotional Learning - 培養受用一生的情緒智慧與軟實力</p>
+        </header>
+
+        <section class="content-section">
+            <h2>什麼是 SEL？</h2>
+            <p>
+                <strong>社會情緒學習（Social Emotional Learning, SEL）</strong> 是一套系統性的教育方法，由美國「課業、社交與情緒學習組織」（CASEL）所推動。它不僅僅是情緒管理，更是一個學習「調節情緒、建立正面目標、展現同理心、建立良好人際關係並做出負責任決策」的完整歷程。
+            </p>
+            <p>
+                耶魯大學兒童研究教授 Marc Brackett 指出，具備高社交情緒能力的學生，更擅於控制衝動、做出深思熟慮的決定，這也是決定一個人未來幸福與成就的關鍵能力。
+            </p>
+        </section>
+
+        <section class="content-section">
+            <h2>SEL 的五大核心能力 (The CASEL 5)</h2>
+            <p>CASEL 提出了 SEL 的五個核心內涵，這五項能力相輔相成，形成一個完整的學習圓環：</p>
+            
+            <div class="competency-grid">
+                <div class="competency-card" style="border-top-color: #E6A23C;">
+                    <div class="competency-title">
+                        <i class="fa-solid fa-user-tag competency-icon" style="color:#E6A23C"></i> 自我覺察 (Self-Awareness)
+                    </div>
+                    <p>認識自己的情緒、價值觀、優勢與侷限。</p>
+                    <ul style="padding-left: 20px; color:#555; font-size:0.95rem;">
+                        <li><strong>情緒覺察：</strong> 辨識當下的感受。</li>
+                        <li><strong>身份認同：</strong> 接納自己的優缺點。</li>
+                        <li><strong>成長心態：</strong> 相信能力可以透過努力改變。</li>
+                    </ul>
+                </div>
+
+                <div class="competency-card" style="border-top-color: #F56C6C;">
+                    <div class="competency-title">
+                        <i class="fa-solid fa-sliders competency-icon" style="color:#F56C6C"></i> 自我管理 (Self-Management)
+                    </div>
+                    <p>有效調節情緒與行為，以達成正向目標。</p>
+                    <ul style="padding-left: 20px; color:#555; font-size:0.95rem;">
+                        <li><strong>情緒調節：</strong> 壓力大時能恢復平衡。</li>
+                        <li><strong>目標設定：</strong> 設定可執行的步驟。</li>
+                        <li><strong>自我激勵：</strong> 克服挫折的動力。</li>
+                    </ul>
+                </div>
+
+                <div class="competency-card" style="border-top-color: #409EFF;">
+                    <div class="competency-title">
+                        <i class="fa-solid fa-users-viewfinder competency-icon" style="color:#409EFF"></i> 社會覺察 (Social Awareness)
+                    </div>
+                    <p>理解他人觀點，展現同理心與尊重。</p>
+                    <ul style="padding-left: 20px; color:#555; font-size:0.95rem;">
+                        <li><strong>同理心：</strong> 感同身受他人的處境。</li>
+                        <li><strong>尊重差異：</strong> 理解不同背景與文化。</li>
+                    </ul>
+                </div>
+
+                <div class="competency-card" style="border-top-color: #67C23A;">
+                    <div class="competency-title">
+                        <i class="fa-solid fa-handshake competency-icon" style="color:#67C23A"></i> 人際技巧 (Relationship Skills)
+                    </div>
+                    <p>建立並維持健康的合作關係。</p>
+                    <ul style="padding-left: 20px; color:#555; font-size:0.95rem;">
+                        <li><strong>溝通能力：</strong> 專心傾聽與真誠表達。</li>
+                        <li><strong>團隊合作：</strong> 與他人協作解決問題。</li>
+                        <li><strong>衝突管理：</strong> 以建設性方式化解分歧。</li>
+                    </ul>
+                </div>
+
+                <div class="competency-card" style="border-top-color: #909399;">
+                    <div class="competency-title">
+                        <i class="fa-solid fa-scale-balanced competency-icon" style="color:#909399"></i> 負責決策 (Responsible Decision-Making)
+                    </div>
+                    <p>做出合乎道德與安全的建設性選擇。</p>
+                    <ul style="padding-left: 20px; color:#555; font-size:0.95rem;">
+                        <li><strong>分析問題：</strong> 收集資訊並探究原因。</li>
+                        <li><strong>預測結果：</strong> 思考決定對自己與他人的影響。</li>
+                        <li><strong>反思：</strong> 承擔責任並從中學習。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-image-wrapper">
+                <img src="SEL5.jpg" alt="SEL 5大內涵示意圖">
+                <div class="image-caption">
+                    SEL 5大內涵示意圖。SEL中除了五大技能外，也包含藍色的外在環境，如班級（SEL課程與教學）、學校（學校實踐與政策）、家庭和社區（家庭與社區合作）。取自CASEL
+                </div>
+            </div>
+
+        </section>
+
+        <section class="content-section">
+            <h2>SEL 的優點與重要性</h2>
+            <p>社會情緒學習（SEL）中的技巧，能讓孩子在社交方面更游刃有餘，同時透過瞭解自己，提升抗壓力及控制衝動能力，有助於提升學業成績、社交或工作表現，是未來人才的重要競爭力。</p>
+            
+            <p>美國《兒童發展期刊》的文章，過去曾探討從學校為本位的社會情緒學習，以提升孩子的發展，結果發現參與課程的學生相較於對照組學生，其平均的學業表現高出 13 個百分點。</p>
+            
+            <p>SEL 為什麼重要？延伸到未來的重大決策階段，無論是升學、就業或是結婚，孩子可能會遇到讀書壓力、性別歧視、騷擾或暴力等問題。面對許多人生中的茫然，在種種外在壓力適應不良、內在衝突無法取得平衡的狀態裡，SEL 讓孩子在學會守護自己的同時，有效提升學業、專業能力，與同儕相處更加融洽。</p>
+        </section>
+
+        <section class="content-section">
+            <h2>為什麼 SEL 這麼重要？ (數據佐證)</h2>
+            <p>根據 2013 年 CASEL 的全美大調查，以及《兒童發展期刊》的研究顯示，實施 SEL 對學生有顯著的正向影響：</p>
+            
+            <div class="stat-box">
+                <div class="stat-item">
+                    <span class="stat-number">3~12歲</span>
+                    <span class="stat-label">最佳學習黃金期</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">+11%</span>
+                    <span class="stat-label">學業成就提升</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">+10%</span>
+                    <span class="stat-label">親社會行為增加</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">-10%</span>
+                    <span class="stat-label">反社會/違規行為減少</span>
+                </div>
+            </div>
+            
+            <p>
+                在後疫情時代，學生面臨更多的焦慮與人際疏離。SEL 不僅能提升學業表現，更是預防校園霸凌、提升心理韌性（Resilience）的重要保護因子。
+            </p>
+        </section>
+
+        <div class="source-note">
+            資料來源：CASEL、親子天下 Premium (2025)、新生醫專圖書館整理
+        </div>
+
+        <footer>
+            Copyright © 新生學校財團法人新生醫護管理專科學校<br>
+            325桃園市龍潭區中豐路高平段418號<br>
+            TEL: (03)411-7578 轉 250 & 251 | E-Mail: lib@hsc.edu.tw
+        </footer>
+
+    </main>
+
+</body>
+</html>

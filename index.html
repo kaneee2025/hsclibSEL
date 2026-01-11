@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新生醫專圖書館 SEL 社會情緒學習資源專區</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- 1. 基礎變數與設定 --- */
+        :root {
+            --header-height: 64px;
+            --sidebar-width: 250px;
+            --primary-color: #5D9CEC;   /* 天空藍 */
+            --primary-dark: #4A89DC;    /* 深藍 */
+            --text-main: #333;
+            --text-light: #666;
+            --bg-body: #F0F4F8;
+            --bg-sidebar: #F9FAFC;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- 2. 頂部通欄 (Top Navbar) --- */
+        header.top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+
+        .navbar-brand { text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .brand-logo { height: 45px; width: auto; }
+        .brand-text { font-size: 1.25rem; font-weight: bold; color: var(--text-main); white-space: nowrap; }
+        .navbar-links { display: flex; align-items: center; }
+        .navbar-links a { text-decoration: none; color: #777; margin-left: 20px; font-size: 0.9rem; font-weight: 500; transition: 0.3s; white-space: nowrap; }
+        .navbar-links a:hover { color: var(--primary-color); }
+
+        /* --- 3. 左側選單 (Sidebar) --- */
+        aside.sidebar {
+            position: fixed; top: var(--header-height); left: 0;
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+            background: var(--bg-sidebar); border-right: 1px solid #e1e8ed;
+            padding: 20px;
+            overflow-y: auto; z-index: 900;
+        }
+
+        .sidebar-block {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .block-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .block-title i { color: #00796B; }
+
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { border-bottom: 1px dashed #eee; }
+        .sidebar-menu li:last-child { border-bottom: none; }
+
+        .sidebar-menu a {
+            display: flex; align-items: center; padding: 10px 5px;
+            text-decoration: none; color: #555; font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-menu a:hover { color: var(--primary-color); padding-left: 8px; }
+        .sidebar-menu i { width: 20px; text-align: center; margin-right: 8px; color: #888; }
+        .sidebar-menu a:hover i { color: var(--primary-color); }
+
+        .news-list { list-style: none; padding: 0; margin: 0; }
+        .news-item { margin-bottom: 15px; }
+        .news-item:last-child { margin-bottom: 0; }
+        .news-date { font-size: 0.8rem; color: #999; display: block; margin-bottom: 3px; }
+        .news-title { font-size: 0.95rem; color: #333; line-height: 1.4; display: block; text-decoration: none; }
+        .news-title:hover { color: var(--primary-color); }
+
+        /* --- 4. 主要內容區 --- */
+        main.main-content {
+            margin-top: var(--header-height); margin-left: var(--sidebar-width);
+            padding: 40px; width: 100%;
+        }
+
+        h2 {
+            font-size: 1.6rem; color: #2c3e50; margin-bottom: 25px;
+            display: flex; align-items: center; gap: 10px;
+            border-bottom: 1px solid #e1e8ed; padding-bottom: 15px;
+        }
+
+        /* --- Banner --- */
+        .banner-area {
+            width: 100%; height: auto; border-radius: 12px; overflow: hidden;
+            position: relative; margin-bottom: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .banner-area img { width: 100%; height: auto; display: block; }
+        .hero-text-hidden { display: none; }
+
+        /* --- 5. 核心能力區塊 --- */
+        .competency-grid {
+            display: grid; gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+        @media (min-width: 1200px) { .competency-grid { grid-template-columns: repeat(5, 1fr); } }
+
+        .competency-card {
+            background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px 15px;
+            transition: transform 0.2s; border-top: 4px solid var(--primary-color);
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .competency-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .competency-title { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--text-main); }
+        .competency-icon { font-size: 1.3rem; }
+        .competency-card p { font-size: 0.9rem; color: #555; margin: 0 0 10px 0; line-height: 1.4; }
+        .competency-list { padding-left: 18px; margin: 0; color: #666; font-size: 0.85rem; }
+        .competency-list li { margin-bottom: 4px; }
+
+        .section-desc {
+            font-size: 1.05rem; color: #555; margin-bottom: 30px; line-height: 1.6; padding: 0 10px;
+        }
+
+        /* --- 電子書區塊 (首頁微縮版) --- */
+        .ebook-grid-mini {
+            display: grid;
+            gap: 15px; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+        @media (min-width: 992px) { 
+            .ebook-grid-mini { grid-template-columns: repeat(5, 1fr); } 
+        }
+
+        .ebook-card-mini {
+            background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 10px; text-align: center; border: 1px solid #eee;
+            transition: transform 0.2s; display: flex; flex-direction: column; align-items: center;
+        }
+        .ebook-card-mini:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+        
+        .ebook-cover-mini {
+            display: block; width: 100%; margin-bottom: 8px;
+            border-radius: 4px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 120px;
+        }
+        .ebook-cover-mini img { width: 100%; height: auto; display: block; }
+        
+        .ebook-title-mini {
+            font-size: 0.85rem; 
+            font-weight: bold; color: #333; margin-bottom: 8px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+            line-height: 1.3; height: 2.6em; 
+        }
+        .ebook-title-mini a { text-decoration: none; color: #333; }
+        .ebook-title-mini a:hover { color: var(--primary-color); }
+
+        .btn-read-mini {
+            display: block; width: 100%;
+            background-color: var(--primary-color); 
+            color: white; text-decoration: none;
+            padding: 6px 0; border-radius: 15px;
+            font-size: 0.8rem; font-weight: bold;
+            margin-top: auto; transition: background-color 0.2s;
+            border: none;
+        }
+        .btn-read-mini:hover { background-color: var(--primary-dark); color: #fff; }
+
+
+        /* --- 6. 影音區塊 --- */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        @media (min-width: 1200px) { .video-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .vod-card {
+            background: #fff; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.3s; border: 1px solid #eee;
+            display: flex; flex-direction: column;
+        }
+        .vod-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(93, 156, 236, 0.15); border-color: #A0D2EB; }
+        .vod-wrapper { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
+        .vod-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        .vod-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .vod-tag { display: inline-block; font-size: 0.7rem; color: #fff; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; align-self: flex-start; }
+        .tag-trend { background-color: #E9573F; } .tag-concept { background-color: #37BC9B; }
+        .tag-talk { background-color: #967ADC; } .tag-practice { background-color: #5D9CEC; }
+        .vod-title { 
+            font-size: 1rem; font-weight: bold; color: #333; margin: 0 0 8px 0; line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
+        }
+        .vod-desc { 
+            font-size: 0.85rem; color: #777; line-height: 1.5; margin-bottom: 10px; flex-grow: 1; 
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
+        }
+        .vod-meta { font-size: 0.75rem; color: #aaa; border-top: 1px solid #f0f0f0; padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* --- 7. 線上資源 --- */
+        .resource-grid-index {
+            display: grid; gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+        @media (min-width: 1200px) { .resource-grid-index { grid-template-columns: repeat(5, 1fr); } }
+
+        .res-card-mini {
+            background: #fff; border: 1px solid #eee; border-radius: 8px;
+            padding: 20px 15px; text-align: center;
+            transition: transform 0.2s; border-top: 3px solid #ddd;
+            display: flex; flex-direction: column; align-items: center; height: 100%;
+        }
+        .res-card-mini:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+
+        .res-icon-mini { font-size: 1.8rem; margin-bottom: 15px; color: #ccc; }
+        .res-title-mini { 
+            font-size: 0.95rem; font-weight: bold; color: #333; margin-bottom: 10px; flex-grow: 1;
+            line-height: 1.4;
+        }
+
+        .res-link-mini {
+            font-size: 0.8rem; color: var(--primary-color); text-decoration: none;
+            border: 1px solid var(--primary-color); padding: 4px 12px; border-radius: 20px;
+            transition: 0.2s; margin-top: auto;
+        }
+        .res-link-mini:hover { background-color: var(--primary-color); color: #fff; }
+
+        .bd-blue { border-top-color: #4A89DC; } .txt-blue { color: #4A89DC; }
+        .bd-green { border-top-color: #37BC9B; } .txt-green { color: #37BC9B; }
+        .bd-purple { border-top-color: #967ADC; } .txt-purple { color: #967ADC; }
+        .bd-red { border-top-color: #E9573F; } .txt-red { color: #E9573F; }
+
+        /* 頁腳樣式設定 */
+        footer { 
+            text-align: center; 
+            color: #777; 
+            padding: 40px 20px; 
+            font-size: 0.9rem; 
+            border-top: 1px solid #eee; 
+            margin-top: 40px; 
+            line-height: 1.6; /* 增加行距，讓多行地址更好讀 */
+            width: 100%; /* 確保滿版 */
+        }
+
+        /* RWD 手機版 */
+        @media (max-width: 768px) {
+            aside.sidebar { display: none; }
+            main.main-content { margin-left: 0; padding: 20px; }
+            .navbar-links { display: none; }
+            .brand-text { font-size: 1rem; } 
+            .brand-logo { height: 35px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <a href="index.html" class="navbar-brand">
+            <img src="hsc-logo.png" alt="新生醫專圖書館 Logo" class="brand-logo">
+            <span class="brand-text">新生醫專圖書館 SEL 專區</span>
+        </a>
+        <nav class="navbar-links">
+            <a href="index.html">回首頁</a>
+            <a href="https://lib.hsc.edu.tw/" target="_blank">回圖書館首頁</a>
+            <a href="https://www.hsc.edu.tw/" target="_blank">回學校首頁</a>
+        </nav>
+    </header>
+
+    <aside class="sidebar">
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-compass"></i> 快速導引</div>
+            <ul class="sidebar-menu">
+                <li><a href="sel-intro.html"><i class="fa-solid fa-star"></i> 認識 SEL</a></li>
+                <li><a href="sel-videos.html"><i class="fa-solid fa-play-circle"></i> 精選影音</a></li>
+                <li><a href="sel-resources.html"><i class="fa-solid fa-link"></i> 線上資源</a></li>
+                <li><a href="sel-ebooks.html"><i class="fa-solid fa-book"></i> 電子書推薦</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-bullhorn"></i> 最新公告</div>
+            <ul class="news-list">
+                <li class="news-item">
+                    <span class="news-date">2026/01/08</span>
+                    <a href="sel-videos.html" class="news-title">新增 6 部 SEL 精選影音，歡迎觀看！</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/07</span>
+                    <a href="sel-resources.html" class="news-title">新增學術研究機構與推廣協會資源連結</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/01</span>
+                    <span class="news-title">SEL 社會情緒學習專區正式上線！</span>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        
+        <div class="banner-area">
+            <img src="sel-banner.png" alt="SEL Learning Resources Banner">
+            <div class="hero-text-hidden">
+                <h1 style="margin:0;">寧靜與韌性</h1>
+                <p style="margin:5px 0 0;">新生醫專圖書館 - 社會情緒學習主題資源</p>
+            </div>
+        </div>
+
+        <section id="intro">
+            <h2><i class="fa-solid fa-info-circle" style="color:var(--primary-color)"></i> 認識 SEL (社會情緒學習)</h2>
+            <div class="section-desc">
+                SEL 是一種學習過程，幫助我們理解和管理情緒、設定正向目標、感受同理心、建立良好人際關係，並做出負責任的決定。
+            </div>
+
+            <div class="competency-grid">
+                <div class="competency-card" style="border-top-color: #E6A23C;">
+                    <div class="competency-title"><i class="fa-solid fa-user-tag competency-icon" style="color:#E6A23C"></i> 自我覺察</div>
+                    <p>認識情緒與優勢。</p>
+                    <ul class="competency-list"><li>情緒辨識</li><li>自信建立</li></ul>
+                </div>
+                <div class="competency-card" style="border-top-color: #F56C6C;">
+                    <div class="competency-title"><i class="fa-solid fa-sliders competency-icon" style="color:#F56C6C"></i> 自我管理</div>
+                    <p>調節情緒與行為。</p>
+                    <ul class="competency-list"><li>衝動控制</li><li>壓力管理</li></ul>
+                </div>
+                <div class="competency-card" style="border-top-color: #409EFF;">
+                    <div class="competency-title"><i class="fa-solid fa-users-viewfinder competency-icon" style="color:#409EFF"></i> 社會覺察</div>
+                    <p>理解他人觀點。</p>
+                    <ul class="competency-list"><li>同理心</li><li>尊重多元</li></ul>
+                </div>
+                <div class="competency-card" style="border-top-color: #67C23A;">
+                    <div class="competency-title"><i class="fa-solid fa-handshake competency-icon" style="color:#67C23A"></i> 人際技巧</div>
+                    <p>建立健康關係。</p>
+                    <ul class="competency-list"><li>有效溝通</li><li>團隊合作</li></ul>
+                </div>
+                <div class="competency-card" style="border-top-color: #909399;">
+                    <div class="competency-title"><i class="fa-solid fa-scale-balanced competency-icon" style="color:#909399"></i> 負責決策</div>
+                    <p>做出建設性選擇。</p>
+                    <ul class="competency-list"><li>問題識別</li><li>後果評估</li></ul>
+                </div>
+            </div>
+            
+            <div style="text-align:right; margin-top:25px;">
+                <a href="sel-intro.html" style="display:inline-block; padding:8px 25px; border:1px solid var(--primary-color); color:var(--primary-color); text-decoration:none; border-radius:25px; transition:0.3s; font-size:0.9rem;">
+                    觀看更多 SEL 知識 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <section id="ebooks">
+            <h2><i class="fa-solid fa-book-open" style="color:var(--primary-color)"></i> SEL 主題電子書</h2>
+            <div class="ebook-grid-mini">
+                <div class="ebook-card-mini">
+                    <a href="https://reading.udn.com/udnlib/hsc/B/245541" target="_blank" class="ebook-cover-mini">
+                        <img src="book1.jpg" alt="只是快撐不下去">
+                    </a>
+                    <div class="ebook-title-mini">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/245541" target="_blank">只是快撐不下去</a>
+                    </div>
+                    <a href="https://reading.udn.com/udnlib/hsc/B/245541" target="_blank" class="btn-read-mini">
+                        <i class="fa-solid fa-book-reader"></i> 立即借閱
+                    </a>
+                </div>
+                <div class="ebook-card-mini">
+                    <a href="https://reading.udn.com/udnlib/hsc/B/244903" target="_blank" class="ebook-cover-mini">
+                        <img src="book2.jpg" alt="別動不動就自責">
+                    </a>
+                    <div class="ebook-title-mini">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/244903" target="_blank">別動不動就自責</a>
+                    </div>
+                    <a href="https://reading.udn.com/udnlib/hsc/B/244903" target="_blank" class="btn-read-mini">
+                        <i class="fa-solid fa-book-reader"></i> 立即借閱
+                    </a>
+                </div>
+                <div class="ebook-card-mini">
+                    <a href="https://reading.udn.com/udnlib/hsc/B/244900" target="_blank" class="ebook-cover-mini">
+                        <img src="book3.jpg" alt="林林小獸亂入抱緊處理">
+                    </a>
+                    <div class="ebook-title-mini">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/244900" target="_blank">林林小獸亂入抱緊處理</a>
+                    </div>
+                    <a href="https://reading.udn.com/udnlib/hsc/B/244900" target="_blank" class="btn-read-mini">
+                        <i class="fa-solid fa-book-reader"></i> 立即借閱
+                    </a>
+                </div>
+                <div class="ebook-card-mini">
+                    <a href="https://reading.udn.com/udnlib/hsc/B/243838" target="_blank" class="ebook-cover-mini">
+                        <img src="book4.jpg" alt="練習更快樂">
+                    </a>
+                    <div class="ebook-title-mini">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/243838" target="_blank">練習更快樂</a>
+                    </div>
+                    <a href="https://reading.udn.com/udnlib/hsc/B/243838" target="_blank" class="btn-read-mini">
+                        <i class="fa-solid fa-book-reader"></i> 立即借閱
+                    </a>
+                </div>
+                <div class="ebook-card-mini">
+                    <a href="https://reading.udn.com/udnlib/hsc/B/241015" target="_blank" class="ebook-cover-mini">
+                        <img src="book5.jpg" alt="存在的勇氣">
+                    </a>
+                    <div class="ebook-title-mini">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/241015" target="_blank">存在的勇氣</a>
+                    </div>
+                    <a href="https://reading.udn.com/udnlib/hsc/B/241015" target="_blank" class="btn-read-mini">
+                        <i class="fa-solid fa-book-reader"></i> 立即借閱
+                    </a>
+                </div>
+            </div>
+            
+            <div style="text-align:right; margin-top:25px;">
+                <a href="sel-ebooks.html" style="display:inline-block; padding:8px 25px; border:1px solid var(--primary-color); color:var(--primary-color); text-decoration:none; border-radius:25px; transition:0.3s; font-size:0.9rem;">
+                    查看更多電子書 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <section id="videos">
+            <h2><i class="fa-solid fa-video" style="color:var(--primary-color)"></i> 精選影音</h2>
+            <div class="video-grid">
+                <div class="vod-card">
+                    <div class="vod-wrapper"><iframe src="https://www.youtube.com/embed/NkyiPOAohLc?start=84" allowfullscreen></iframe></div>
+                    <div class="vod-info">
+                        <span class="vod-tag tag-trend">趨勢</span>
+                        <h3 class="vod-title">台灣 SEL 元年！全面進入中小學</h3>
+                        <p class="vod-desc">教育部推動為期五年的 SEL 計畫，身為大人該如何學習？</p>
+                        <div class="vod-meta"><span>親子天下</span><a href="sel-videos.html" style="color:var(--primary-color);text-decoration:none;">看更多</a></div>
+                    </div>
+                </div>
+                <div class="vod-card">
+                    <div class="vod-wrapper"><iframe src="https://www.youtube.com/embed/ikehX9o1JbI" allowfullscreen></iframe></div>
+                    <div class="vod-info">
+                        <span class="vod-tag tag-concept">觀念</span>
+                        <h3 class="vod-title">What Is SEL? (Social Emotional Learning)</h3>
+                        <p class="vod-desc">三分鐘清楚解釋 SEL 定義，這是學習社交與情緒技巧的過程。</p>
+                        <div class="vod-meta"><span>CFC</span><a href="sel-videos.html" style="color:var(--primary-color);text-decoration:none;">看更多</a></div>
+                    </div>
+                </div>
+                <div class="vod-card">
+                    <div class="vod-wrapper"><iframe src="https://www.youtube.com/embed/AN-o_Bg4jsQ" allowfullscreen></iframe></div>
+                    <div class="vod-info">
+                        <span class="vod-tag tag-talk">訪談</span>
+                        <h3 class="vod-title">專訪《SEL社會情緒學習力》曲智鑛</h3>
+                        <p class="vod-desc">AI 時代，情緒素養無法被取代。分享如何在校園落實 SEL。</p>
+                        <div class="vod-meta"><span>閱讀人</span><a href="sel-videos.html" style="color:var(--primary-color);text-decoration:none;">看更多</a></div>
+                    </div>
+                </div>
+                <div class="vod-card">
+                    <div class="vod-wrapper"><iframe src="https://www.youtube.com/embed/GeXY3ugIRwQ?start=10" allowfullscreen></iframe></div>
+                    <div class="vod-info">
+                        <span class="vod-tag tag-practice">實作</span>
+                        <h3 class="vod-title">總是一秒被惹怒？告別路怒與焦慮</h3>
+                        <p class="vod-desc">耶魯大學教授提出的 RULER 工具，教你五步驟調節情緒。</p>
+                        <div class="vod-meta"><span>天下雜誌</span><a href="sel-videos.html" style="color:var(--primary-color);text-decoration:none;">看更多</a></div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:right; margin-top:25px;">
+                <a href="sel-videos.html" style="display:inline-block; padding:8px 25px; border:1px solid var(--primary-color); color:var(--primary-color); text-decoration:none; border-radius:25px; transition:0.3s; font-size:0.9rem;">
+                    觀看更多影片 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <section id="resources">
+            <h2><i class="fa-solid fa-globe" style="color:var(--primary-color)"></i> 延伸學習資源</h2>
+            <div class="resource-grid-index">
+                <div class="res-card-mini bd-blue">
+                    <i class="fa-solid fa-university res-icon-mini txt-blue"></i>
+                    <div class="res-title-mini">臺師大社會情緒與教育發展中心</div>
+                    <a href="https://seedcenter.tw/" target="_blank" class="res-link-mini">前往網站</a>
+                </div>
+                <div class="res-card-mini bd-green">
+                    <i class="fa-solid fa-hands-holding-child res-icon-mini txt-green"></i>
+                    <div class="res-title-mini">臺灣芯福里情緒教育推廣協會</div>
+                    <a href="https://www.happinessvillage.org/" target="_blank" class="res-link-mini">前往網站</a>
+                </div>
+                <div class="res-card-mini bd-purple">
+                    <i class="fa-solid fa-spa res-icon-mini txt-purple"></i>
+                    <div class="res-title-mini">台灣正念發展協會<br>(Mindfulness)</div>
+                    <a href="http://www.mindfulness.org.tw/index_tw.php" target="_blank" class="res-link-mini">前往網站</a>
+                </div>
+                <div class="res-card-mini bd-purple">
+                    <i class="fa-solid fa-comments res-icon-mini txt-purple"></i>
+                    <div class="res-title-mini">中華好好說話，學會<br>(非暴力溝通)</div>
+                    <a href="https://www.ccaasia.org/" target="_blank" class="res-link-mini">前往網站</a>
+                </div>
+                <div class="res-card-mini bd-red">
+                    <i class="fa-solid fa-book-open-reader res-icon-mini txt-red"></i>
+                    <div class="res-title-mini">親子天下：<br>SEL 深度專題</div>
+                    <a href="https://premium.parenting.com.tw/article/5093530" target="_blank" class="res-link-mini">閱讀文章</a>
+                </div>
+            </div>
+            <div style="text-align:right; margin-top:20px;">
+                <a href="sel-resources.html" style="display:inline-block; padding:8px 25px; border:1px solid var(--primary-color); color:var(--primary-color); text-decoration:none; border-radius:25px; transition:0.3s; font-size:0.9rem;">
+                    查看所有資源 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <footer>
+            Copyright © 新生學校財團法人新生醫護管理專科學校<br>
+            325桃園市龍潭區中豐路高平段418號<br>
+            TEL: (03)411-7578 轉 250 & 251 | E-Mail: lib@hsc.edu.tw
+        </footer>
+
+    </main>
+
+</body>
+</html>

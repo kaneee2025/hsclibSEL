@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEL 精選影音 | 新生醫專圖書館</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- 沿用全站統一風格 (System CSS) --- */
+        :root {
+            --header-height: 64px;
+            --sidebar-width: 250px;
+            --primary-color: #5D9CEC;
+            --primary-dark: #4A89DC;
+            --text-main: #333;
+            --text-light: #666;
+            --bg-body: #F0F4F8;
+            --bg-sidebar: #F9FAFC;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 頂部通欄 */
+        header.top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+
+        .navbar-brand { text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .brand-logo { height: 45px; width: auto; }
+        .brand-text { font-size: 1.25rem; font-weight: bold; color: var(--text-main); white-space: nowrap; }
+        
+        .navbar-links { display: flex; align-items: center; }
+        .navbar-links a { 
+            text-decoration: none; 
+            color: #777; 
+            margin-left: 20px; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            transition: 0.3s; 
+            white-space: nowrap;
+        }
+        .navbar-links a:hover { color: var(--primary-color); }
+
+        /* --- 左側選單 (Sidebar) --- */
+        aside.sidebar {
+            position: fixed; top: var(--header-height); left: 0;
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+            background: var(--bg-sidebar); border-right: 1px solid #e1e8ed;
+            padding: 20px;
+            overflow-y: auto; z-index: 900;
+        }
+
+        /* 側邊欄區塊卡片化 */
+        .sidebar-block {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 區塊標題 */
+        .block-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .block-title i { color: #00796B; }
+
+        /* 選單列表 */
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { border-bottom: 1px dashed #eee; }
+        .sidebar-menu li:last-child { border-bottom: none; }
+
+        .sidebar-menu a {
+            display: flex; align-items: center; padding: 10px 5px;
+            text-decoration: none; color: #555; font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active { 
+            color: var(--primary-color); 
+            padding-left: 8px; 
+            font-weight: bold;
+        }
+        .sidebar-menu i { width: 20px; text-align: center; margin-right: 8px; color: #888; }
+        .sidebar-menu a:hover i, .sidebar-menu a.active i { color: var(--primary-color); }
+
+        /* 最新公告列表 */
+        .news-list { list-style: none; padding: 0; margin: 0; }
+        .news-item { margin-bottom: 15px; }
+        .news-item:last-child { margin-bottom: 0; }
+        
+        .news-date { font-size: 0.8rem; color: #999; display: block; margin-bottom: 3px; }
+        .news-title { font-size: 0.95rem; color: #333; line-height: 1.4; display: block; text-decoration: none; }
+        .news-title:hover { color: var(--primary-color); }
+
+        /* --- 影音專區特定樣式 --- */
+        main.main-content {
+            margin-top: var(--header-height); margin-left: var(--sidebar-width);
+            padding: 40px; width: 100%;
+        }
+
+        /* 麵包屑導覽 */
+        .breadcrumb { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
+        .breadcrumb a { text-decoration: none; color: var(--primary-color); }
+
+        .page-header {
+            margin-bottom: 30px; border-bottom: 1px solid #e1e8ed; padding-bottom: 15px;
+        }
+        .page-header h1 { margin: 0; font-size: 1.8rem; color: #2c3e50; }
+        .page-header p { color: #666; margin-top: 5px; }
+
+        /* VOD 格狀佈局 */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* 卡片寬度自適應 */
+            gap: 30px;
+        }
+
+        /* 影片卡片 */
+        .vod-card {
+            background: #fff; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #eee;
+            display: flex; flex-direction: column;
+        }
+        .vod-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(93, 156, 236, 0.15);
+            border-color: #A0D2EB;
+        }
+
+        .vod-wrapper {
+            position: relative; padding-bottom: 56.25%; height: 0; background: #000;
+        }
+        .vod-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+
+        .vod-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        
+        /* 標籤樣式 */
+        .vod-tag {
+            font-size: 0.75rem; color: #fff; padding: 4px 10px; border-radius: 20px;
+            margin-bottom: 10px; align-self: flex-start;
+            font-weight: 500; letter-spacing: 0.5px;
+        }
+        .tag-trend { background-color: #E9573F; } /* 熱門趨勢 (紅) */
+        .tag-concept { background-color: #37BC9B; } /* 觀念 (綠) */
+        .tag-talk { background-color: #967ADC; } /* 訪談 (紫) */
+        .tag-practice { background-color: #5D9CEC; } /* 實作 (藍) */
+
+        .vod-title {
+            font-size: 1.1rem; font-weight: bold; color: #333;
+            margin: 0 0 10px 0; line-height: 1.4;
+            /* 限制標題行數，超過顯示... */
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .vod-desc {
+            font-size: 0.9rem; color: #777; line-height: 1.5; margin-bottom: 15px; flex-grow: 1;
+            /* 限制簡介行數 */
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .vod-meta {
+            font-size: 0.8rem; color: #aaa; border-top: 1px solid #f0f0f0; padding-top: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .channel-name { display: flex; align-items: center; gap: 5px; }
+        .channel-name i { color: #ccc; }
+
+        /* 頁腳樣式設定 */
+        footer { 
+            text-align: center; 
+            color: #777; 
+            padding: 40px 20px; 
+            font-size: 0.9rem; 
+            border-top: 1px solid #eee; 
+            margin-top: 40px; 
+            line-height: 1.6; /* 增加行距，讓多行地址更好讀 */
+            width: 100%; /* 確保滿版 */
+        }
+
+        /* RWD */
+        @media (max-width: 768px) {
+            aside.sidebar { display: none; }
+            main.main-content { margin-left: 0; padding: 20px; }
+            .navbar-links a { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <a href="index.html" class="navbar-brand">
+            <img src="hsc-logo.png" alt="新生醫專圖書館 Logo" class="brand-logo">
+            <span class="brand-text">新生醫專圖書館 SEL 專區</span>
+        </a>
+        <nav class="navbar-links">
+            <a href="index.html">回首頁</a>
+            <a href="https://lib.hsc.edu.tw/" target="_blank">回圖書館首頁</a>
+            <a href="https://www.hsc.edu.tw/" target="_blank">回學校首頁</a>
+        </nav>
+    </header>
+
+    <aside class="sidebar">
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-compass"></i> 快速導引</div>
+            <ul class="sidebar-menu">
+                <li><a href="sel-intro.html"><i class="fa-solid fa-star"></i> 認識 SEL</a></li>
+                <li><a href="sel-videos.html" class="active"><i class="fa-solid fa-play-circle"></i> 精選影音</a></li>
+                <li><a href="sel-resources.html"><i class="fa-solid fa-link"></i> 線上資源</a></li>
+                <li><a href="sel-ebooks.html"><i class="fa-solid fa-book"></i> 電子書推薦</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-bullhorn"></i> 最新公告</div>
+            <ul class="news-list">
+                <li class="news-item">
+                    <span class="news-date">2026/01/08</span>
+                    <a href="sel-videos.html" class="news-title">新增 6 部 SEL 精選影音，歡迎觀看！</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/07</span>
+                    <a href="sel-resources.html" class="news-title">新增學術研究機構與推廣協會資源連結</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/01</span>
+                    <span class="news-title">SEL 社會情緒學習專區正式上線！</span>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        
+        <div class="breadcrumb">
+            <a href="index.html">首頁</a> &gt; <span>精選影音館藏</span>
+        </div>
+
+        <div class="page-header">
+            <h1><i class="fa-solid fa-film" style="color:var(--primary-color); margin-right:10px;"></i>精選影音館藏</h1>
+            <p>彙整專家訪談、觀念解析與實作練習，讓您隨時隨地提升情緒素養。</p>
+        </div>
+
+        <div class="video-grid">
+            
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/NkyiPOAohLc?start=84" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-trend">趨勢焦點</span>
+                    <h3 class="vod-title">台灣社會情緒學習元年！SEL 全面進入中小學</h3>
+                    <p class="vod-desc">教育部宣布推動為期五年的社會情緒學習（SEL）計畫。身為大人的我們該如何跟著孩子一起學習，打造受用一生的心理韌性呢？</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 親子天下</span>
+                        <span><i class="fa-regular fa-clock"></i> 8:47</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/ikehX9o1JbI" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-concept">基礎觀念</span>
+                    <h3 class="vod-title">Social-Emotional Learning: What Is SEL? (英文)</h3>
+                    <p class="vod-desc">短短三分鐘清楚解釋 SEL 的定義與重要性。這是一個學習社交與情緒技巧的過程，就如同學習閱讀或數學一樣重要。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> Committee for Children</span>
+                        <span><i class="fa-regular fa-clock"></i> 2:55</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/AN-o_Bg4jsQ" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-talk">專家訪談</span>
+                    <h3 class="vod-title">專訪《SEL社會情緒學習力》曲智鑛老師</h3>
+                    <p class="vod-desc">在 AI 時代，許多技能可被取代，唯有「情緒素養」無法被取代。曲智鑛老師分享如何在家庭與校園中落實 SEL 教育。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 閱讀人</span>
+                        <span><i class="fa-regular fa-clock"></i> 22:05</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/DA5cyvU9sjs" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-talk">深度講座</span>
+                    <h3 class="vod-title">國家教育新趨勢：社會情緒學習 SEL</h3>
+                    <p class="vod-desc">邀請臨床心理師李易清，深入解析 SEL 的五大核心能力（自我覺察、自我管理、社會覺察、人際技巧、負責決策）及其實務應用。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 你的專屬健心教練</span>
+                        <span><i class="fa-regular fa-clock"></i> 55:22</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/GeXY3ugIRwQ?start=10" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-practice">情緒調節</span>
+                    <h3 class="vod-title">總是一秒被惹怒？告別路怒、焦慮</h3>
+                    <p class="vod-desc">情緒管理不是心靈雞湯，而是一套可學習的系統。耶魯大學教授提出的 RULER 工具，教你五步驟識別並調節情緒。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 天下雜誌</span>
+                        <span><i class="fa-regular fa-clock"></i> 8:40</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/C_2pHs4SfcI" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-trend">教育趨勢</span>
+                    <h3 class="vod-title">全民必修的情緒課，SEL 進入課綱會有什麼改變？</h3>
+                    <p class="vod-desc">專訪台師大社會情緒教育發展中心主任陳學志。SEL 不僅是青少年的課題，更是全民必修課，能提升大腦的幸福感與成就。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 天下雜誌</span>
+                        <span><i class="fa-regular fa-clock"></i> 37:50</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/kYcq1NoaG20" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-trend">趨勢觀點</span>
+                    <h3 class="vod-title">EP85｜《SEL》到底賣什麼藥？全世界都在學的情緒課題</h3>
+                    <p class="vod-desc">探討為什麼台灣近年來高度推行SEL？從北歐到美國的教育趨勢，聊聊情緒教育如何降低社會成本，提升幸福感。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> K歌Su房</span>
+                        <span><i class="fa-regular fa-clock"></i> 28:54</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/9RRG9-DpOh0" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-concept">核心觀念</span>
+                    <h3 class="vod-title">SEL社會情緒教育─鄭若瑟</h3>
+                    <p class="vod-desc">鄭若瑟醫師分享 SEL 如何培養孩子的自我效能、自尊與自律，並透過善意溝通修復關係，建立正向的班級文化。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 善意溝通修復協會</span>
+                        <span><i class="fa-regular fa-clock"></i> 21:07</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/BScVmeebaYI" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-talk">專家訪談</span>
+                    <h3 class="vod-title">【#特別企劃】EP115 別只教孩子考高分！ 6 歲孩子有50種情緒卻不懂表達</h3>
+                    <p class="vod-desc">楊俐容老師分享如何建構孩子的SEL素養，讓情緒不再是親子間的戰場，培養AI時代不可缺的人才素養力。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 未來親子</span>
+                        <span><i class="fa-regular fa-clock"></i> 29:42</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/wVl0qSXG_hM" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-practice">情緒管理</span>
+                    <h3 class="vod-title">孩子叛逆嗎？大人小孩都該學的情緒管理能力｜王宏哲</h3>
+                    <p class="vod-desc">王宏哲專家分享，情緒管理是大人小孩的共同課題。面對孩子叛逆，如何運用同理心與溝通技巧化解衝突？</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 大愛電視</span>
+                        <span><i class="fa-regular fa-clock"></i> 24:01</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/CtdbGv_J5Tg" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-practice">正念溝通</span>
+                    <h3 class="vod-title">我也想和孩子好好說話｜親子正念溝通，讓關係變輕鬆｜郭葉珍</h3>
+                    <p class="vod-desc">郭葉珍教授分享「正念溝通」，練習不評價、活在當下、覺察情緒，讓親子對話從劍拔弩張變為輕鬆自在。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 大愛人文講堂</span>
+                        <span><i class="fa-regular fa-clock"></i> 24:01</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/i7CVCcd0rto" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-talk">親子議題</span>
+                    <h3 class="vod-title">下班後的戰場！爸媽在盯孩子功課上忽略了哪些事? –小孩沒問題</h3>
+                    <p class="vod-desc">鄧惠文醫師與心理師團隊探討如何在課業壓力下，維持良好的親子關係與學習動力，避免功課成為親子戰場。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 小遠 贏了</span>
+                        <span><i class="fa-regular fa-clock"></i> 24:50</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/GIx8rw9gqE0" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-talk">溝通表達</span>
+                    <h3 class="vod-title">孩子為什麼不想溝通？是教育壓抑了表達，還是科技讓人沉默？</h3>
+                    <p class="vod-desc">探討教育環境與科技對表達能力的影響，以及如何引導孩子說出心裡話，重建溝通橋樑，找回表達的自信。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 寰宇教育</span>
+                        <span><i class="fa-regular fa-clock"></i> 18:47</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/ZQnMlFCHJLA" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-practice">情緒調節</span>
+                    <h3 class="vod-title">[#動漫] 情緒起伏大，該怎麼辦？看動畫，學習情緒調節的三大技巧</h3>
+                    <p class="vod-desc">【臺灣吧 x 兒福聯盟】透過生動的動畫，學習覺察、理解與調節情緒的三大實用技巧，適合青少年觀看。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> Taiwan Bar</span>
+                        <span><i class="fa-regular fa-clock"></i> 5:08</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/0b-NnFKB6v8" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-concept">認識情緒</span>
+                    <h3 class="vod-title">【認識情緒】六種基本情緒以及五種紓解方法</h3>
+                    <p class="vod-desc">認識六種基本情緒，並學習五種簡單有效的紓解方法。簡單易懂的動畫，適合家長帶著孩子一起認識情緒的奧秘。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> JoeMama 喬媽媽</span>
+                        <span><i class="fa-regular fa-clock"></i> 5:41</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vod-card">
+                <div class="vod-wrapper">
+                    <iframe src="https://www.youtube.com/embed/NLvZuV2PzfY" allowfullscreen></iframe>
+                </div>
+                <div class="vod-info">
+                    <span class="vod-tag tag-trend">學習資源</span>
+                    <h3 class="vod-title">2023社會情緒教育國際論壇：3-12歲SEL學習地圖與資源</h3>
+                    <p class="vod-desc">楊俐容老師演講：3-12歲 SEL 學習地圖。從情緒力、人際力到心理復原力，為教育工作者與家長提供完整的學習架構。</p>
+                    <div class="vod-meta">
+                        <span class="channel-name"><i class="fa-brands fa-youtube"></i> 芯福里</span>
+                        <span><i class="fa-regular fa-clock"></i> 22:40</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            Copyright © 新生學校財團法人新生醫護管理專科學校<br>
+            325桃園市龍潭區中豐路高平段418號<br>
+            TEL: (03)411-7578 轉 250 & 251 | E-Mail: lib@hsc.edu.tw
+        </footer>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEL 電子書推薦 | 新生醫專圖書館</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- 全站統一風格 (System CSS) --- */
+        :root {
+            --header-height: 64px;
+            --sidebar-width: 250px;
+            --primary-color: #5D9CEC;   /* 天空藍 - 網站主色 */
+            --primary-dark: #4A89DC;    /* 深藍 - Hover 用 */
+            --text-main: #333;
+            --text-light: #666;
+            --bg-body: #F0F4F8;
+            --bg-sidebar: #F9FAFC;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 頂部通欄 */
+        header.top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+        .navbar-brand { text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .brand-logo { height: 45px; width: auto; }
+        .brand-text { font-size: 1.25rem; font-weight: bold; color: var(--text-main); white-space: nowrap; }
+        
+        .navbar-links { display: flex; align-items: center; }
+        .navbar-links a { 
+            text-decoration: none; 
+            color: #777; 
+            margin-left: 20px; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            transition: 0.3s; 
+            white-space: nowrap; 
+        }
+        .navbar-links a:hover { color: var(--primary-color); }
+
+        /* 左側選單 */
+        aside.sidebar {
+            position: fixed; top: var(--header-height); left: 0;
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+            background: var(--bg-sidebar); border-right: 1px solid #e1e8ed;
+            padding: 20px;
+            overflow-y: auto; z-index: 900;
+        }
+
+        .sidebar-block {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .block-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .block-title i { color: #00796B; }
+
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { border-bottom: 1px dashed #eee; }
+        .sidebar-menu li:last-child { border-bottom: none; }
+
+        .sidebar-menu a {
+            display: flex; align-items: center; padding: 10px 5px;
+            text-decoration: none; color: #555; font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active { 
+            color: var(--primary-color); 
+            padding-left: 8px; 
+            font-weight: bold;
+        }
+        .sidebar-menu i { width: 20px; text-align: center; margin-right: 8px; color: #888; }
+        .sidebar-menu a:hover i, .sidebar-menu a.active i { color: var(--primary-color); }
+
+        .news-list { list-style: none; padding: 0; margin: 0; }
+        .news-item { margin-bottom: 15px; }
+        .news-item:last-child { margin-bottom: 0; }
+        .news-date { font-size: 0.8rem; color: #999; display: block; margin-bottom: 3px; }
+        .news-title { font-size: 0.95rem; color: #333; line-height: 1.4; display: block; text-decoration: none; }
+        .news-title:hover { color: var(--primary-color); }
+
+        /* --- 主要內容區 --- */
+        main.main-content {
+            margin-top: var(--header-height); margin-left: var(--sidebar-width);
+            padding: 40px; width: 100%;
+            max-width: 1400px;
+        }
+
+        .breadcrumb { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
+        .breadcrumb a { text-decoration: none; color: var(--primary-color); }
+
+        .page-header { margin-bottom: 40px; border-bottom: 1px solid #e1e8ed; padding-bottom: 15px; }
+        .page-header h1 { margin: 0; font-size: 1.8rem; color: #2c3e50; }
+        .page-header p { color: #666; margin-top: 5px; }
+
+        /* --- 電子書網格佈局 (5欄) --- */
+        .ebook-grid {
+            display: grid;
+            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+
+        @media (min-width: 1200px) {
+            .ebook-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* --- 電子書卡片樣式 --- */
+        .ebook-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #eee;
+            height: 100%;
+        }
+
+        .ebook-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+        }
+
+        /* 封面圖 */
+        .ebook-cover-link {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .ebook-cover-link img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s;
+        }
+        
+        .ebook-card:hover .ebook-cover-link img {
+            transform: scale(1.05);
+        }
+
+        /* 書名與作者 */
+        .ebook-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .ebook-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .ebook-title a {
+            text-decoration: none;
+            color: #333;
+            transition: color 0.2s;
+        }
+        .ebook-title a:hover { color: var(--primary-color); }
+
+        .ebook-author {
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        /* 按鈕樣式 - 更新為網站主色調 */
+        .btn-read {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 8px 0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-read:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-read i { margin-right: 5px; }
+
+        /* 頁腳樣式設定 */
+        footer { 
+            text-align: center; 
+            color: #777; 
+            padding: 40px 20px; 
+            font-size: 0.9rem; 
+            border-top: 1px solid #eee; 
+            margin-top: 40px; 
+            line-height: 1.6; /* 增加行距，讓多行地址更好讀 */
+            width: 100%; /* 確保滿版 */
+        }
+
+        /* RWD */
+        @media (max-width: 768px) {
+            aside.sidebar { display: none; }
+            main.main-content { margin-left: 0; padding: 20px; }
+            .navbar-links { display: none; }
+            .brand-text { font-size: 1rem; }
+            .brand-logo { height: 35px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <a href="index.html" class="navbar-brand">
+            <img src="hsc-logo.png" alt="新生醫專圖書館 Logo" class="brand-logo">
+            <span class="brand-text">新生醫專圖書館 SEL 專區</span>
+        </a>
+        <nav class="navbar-links">
+            <a href="index.html">回首頁</a>
+            <a href="https://lib.hsc.edu.tw/" target="_blank">回圖書館首頁</a>
+            <a href="https://www.hsc.edu.tw/" target="_blank">回學校首頁</a>
+        </nav>
+    </header>
+
+    <aside class="sidebar">
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-compass"></i> 快速導引</div>
+            <ul class="sidebar-menu">
+                <li><a href="sel-intro.html"><i class="fa-solid fa-star"></i> 認識 SEL</a></li>
+                <li><a href="sel-videos.html"><i class="fa-solid fa-play-circle"></i> 精選影音</a></li>
+                <li><a href="sel-resources.html"><i class="fa-solid fa-link"></i> 線上資源</a></li>
+                <li><a href="sel-ebooks.html" class="active"><i class="fa-solid fa-book"></i> 電子書推薦</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-block">
+            <div class="block-title"><i class="fa-solid fa-bullhorn"></i> 最新公告</div>
+            <ul class="news-list">
+                <li class="news-item">
+                    <span class="news-date">2026/01/08</span>
+                    <a href="sel-videos.html" class="news-title">新增 6 部 SEL 精選影音，歡迎觀看！</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/07</span>
+                    <a href="sel-resources.html" class="news-title">新增學術研究機構與推廣協會資源連結</a>
+                </li>
+                <li class="news-item">
+                    <span class="news-date">2026/01/01</span>
+                    <span class="news-title">SEL 社會情緒學習專區正式上線！</span>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        
+        <div class="breadcrumb">
+            <a href="index.html">首頁</a> &gt; <span>電子書推薦</span>
+        </div>
+
+        <div class="page-header">
+            <h1><i class="fa-solid fa-book-open" style="color:var(--primary-color); margin-right:10px;"></i>SEL 主題電子書</h1>
+            <p>新生醫專圖書館精選 UDN 讀書館藏，歡迎師生線上借閱。</p>
+        </div>
+
+        <div class="ebook-grid">
+            
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/245541" target="_blank" class="ebook-cover-link">
+                    <img src="book1.jpg" alt="只是快撐不下去 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/245541" target="_blank">只是快撐不下去：給不敢讓人失望的「高功能內向者」日常救援手冊</a>
+                    </div>
+                    <div class="ebook-author">作者：邱淳孝</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/245541" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/244903" target="_blank" class="ebook-cover-link">
+                    <img src="book2.jpg" alt="別動不動就自責 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/244903" target="_blank">別動不動就自責：把罪惡感化為力量，不內耗的禪智慧</a>
+                    </div>
+                    <div class="ebook-author">作者：枡野俊明</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/244903" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/244900" target="_blank" class="ebook-cover-link">
+                    <img src="book3.jpg" alt="林林小獸亂入抱緊處理 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/244900" target="_blank">林林小獸亂入抱緊處理</a>
+                    </div>
+                    <div class="ebook-author">作者：林妤恒、白琳</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/244900" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/243838" target="_blank" class="ebook-cover-link">
+                    <img src="book4.jpg" alt="練習更快樂 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/243838" target="_blank">練習更快樂：哈佛教授教你活出美好人生的七堂課</a>
+                    </div>
+                    <div class="ebook-author">作者：布魯斯．胡德</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/243838" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/241015" target="_blank" class="ebook-cover-link">
+                    <img src="book5.jpg" alt="存在的勇氣 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/241015" target="_blank">存在的勇氣：會害怕也沒關係！其實，你可以比想像的更勇敢</a>
+                    </div>
+                    <div class="ebook-author">作者：保羅．田立克</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/241015" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/236275" target="_blank" class="ebook-cover-link">
+                    <img src="book6.jpg" alt="如果焦慮是隻貓 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/236275" target="_blank">如果焦慮是隻貓：帶你擺脫情緒內耗，安撫內心的焦慮貓</a>
+                    </div>
+                    <div class="ebook-author">作者：段美茹</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/236275" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/242802" target="_blank" class="ebook-cover-link">
+                    <img src="book7.jpg" alt="我不是憂鬱症，是心太累 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/242802" target="_blank">我不是憂鬱症，是心太累：身心科名醫教你不依賴藥物、零復發</a>
+                    </div>
+                    <div class="ebook-author">作者：龜廣聰、夏川立也</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/242802" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/242632" target="_blank" class="ebook-cover-link">
+                    <img src="book8.jpg" alt="情緒陷阱 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/242632" target="_blank">情緒陷阱：臨床心理學家教你重寫情緒劇本，遠離脫軌人生</a>
+                    </div>
+                    <div class="ebook-author">作者：希利．赫勒</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/242632" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/242991" target="_blank" class="ebook-cover-link">
+                    <img src="book9.jpg" alt="薩提爾的41堂自我療癒課 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/242991" target="_blank">薩提爾的41堂自我療癒課：看見冰山底層的自己，找回愛與勇氣</a>
+                    </div>
+                    <div class="ebook-author">作者：王俊華</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/242991" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+            <div class="ebook-card">
+                <a href="https://reading.udn.com/udnlib/hsc/B/242775" target="_blank" class="ebook-cover-link">
+                    <img src="book10.jpg" alt="你快樂，所以你成功 封面">
+                </a>
+                <div class="ebook-info">
+                    <div class="ebook-title">
+                        <a href="https://reading.udn.com/udnlib/hsc/B/242775" target="_blank">你快樂，所以你成功：史丹佛大學最重要的快樂心理課</a>
+                    </div>
+                    <div class="ebook-author">作者：艾瑪．賽佩拉</div>
+                </div>
+                <a href="https://reading.udn.com/udnlib/hsc/B/242775" target="_blank" class="btn-read">
+                    <i class="fa-solid fa-book-reader"></i> 立即借閱
+                </a>
+            </div>
+
+        </div>
+
+        <footer>
+            Copyright © 新生學校財團法人新生醫護管理專科學校<br>
+            325桃園市龍潭區中豐路高平段418號<br>
+            TEL: (03)411-7578 轉 250 & 251 | E-Mail: lib@hsc.edu.tw
+        </footer>
+
+    </main>
+
+</body>
+</html>
